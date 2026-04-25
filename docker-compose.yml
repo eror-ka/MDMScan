@@ -82,10 +82,32 @@ services:
     networks:
       - mdmscan-net
 
+  worker:
+    build:
+      context: ./services/worker
+    image: mdmscan-worker:latest
+    container_name: mdmscan-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:z
+      - clamav_db:/var/lib/clamav
+      - scan_tmp:/tmp/scans
+    networks:
+      - mdmscan-net
+
 volumes:
   pg_data:
   minio_data:
   redis_data:
+  clamav_db:
+  scan_tmp:
 
 networks:
   mdmscan-net:
