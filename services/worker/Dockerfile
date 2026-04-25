@@ -11,7 +11,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates curl wget gnupg lsb-release \
         git jq tar xz-utils file \
-        clamav clamav-daemon clamav-freshclam \
     && rm -rf /var/lib/apt/lists/*
 
 # ---------- Docker CLI (только клиент, без daemon) ----------
@@ -33,14 +32,6 @@ https://aquasecurity.github.io/trivy-repo/deb generic main" \
         > /etc/apt/sources.list.d/trivy.list && \
     apt-get update && apt-get install -y --no-install-recommends trivy && \
     rm -rf /var/lib/apt/lists/*
-
-# ---------- Grype (Anchore) ----------
-RUN VERSION=$(curl -fsSL https://api.github.com/repos/anchore/grype/releases/latest \
-        | jq -r '.tag_name | ltrimstr("v")') && \
-    curl -fsSL -o /tmp/grype.tar.gz \
-        "https://github.com/anchore/grype/releases/download/v${VERSION}/grype_${VERSION}_linux_amd64.tar.gz" && \
-    tar -xzf /tmp/grype.tar.gz -C /usr/local/bin grype && \
-    rm /tmp/grype.tar.gz
 
 # ---------- Syft (Anchore) ----------
 RUN VERSION=$(curl -fsSL https://api.github.com/repos/anchore/syft/releases/latest \
@@ -84,7 +75,17 @@ RUN VERSION=$(curl -fsSL https://api.github.com/repos/wagoodman/dive/releases/la
 COPY scripts/verify-tools.sh /usr/local/bin/verify-tools
 RUN chmod +x /usr/local/bin/verify-tools
 
+# ---------- Python deps ----------
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
+
+# ---------- Entrypoint ----------
+COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 WORKDIR /app
 
 # Заглушка — на Этапе 3b заменим на запуск Celery-воркера.
-CMD ["sleep", "infinity"]
+COPY app /app/app
+
+CMD ["/usr/local/bin/entrypoint.sh"]

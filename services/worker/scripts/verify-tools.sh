@@ -7,13 +7,11 @@ set -euo pipefail
 declare -a checks=(
     "docker --version"
     "trivy --version"
-    "grype version"
     "syft version"
     "dockle --version"
     "osv-scanner --version"
     "dive --version"
     "trufflehog --version"
-    "clamscan --version"
     "cosign version"
 )
 

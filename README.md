@@ -1,8 +1,8 @@
 # MDMScan
 
 Автоматизированная система оценки безопасности Docker-образов.
-Запускает набор open-source сканеров (Trivy, Grype, Syft, Dockle, OSV-Scanner,
-Dive, TruffleHog, ClamAV, Cosign), нормализует и дедуплицирует находки,
+Запускает набор open-source сканеров (Trivy, Syft, Dockle, OSV-Scanner,
+Dive, TruffleHog, Cosign), нормализует и дедуплицирует находки,
 складывает в Postgres + MinIO, отдаёт через REST API, web UI и Telegram-бота.
 
 ## Статус

@@ -88,6 +88,16 @@ services:
     image: mdmscan-worker:latest
     container_name: mdmscan-worker
     restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      S3_BUCKET_RAW: raw-scans
+      SCAN_WORKDIR: /tmp/scans
+      SCAN_TIMEOUT_SECONDS: ${SCAN_TIMEOUT_SECONDS:-1800}
+      CELERY_LOGLEVEL: INFO
+      CELERY_CONCURRENCY: 2
     depends_on:
       postgres:
         condition: service_healthy
@@ -97,7 +107,6 @@ services:
         condition: service_healthy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:z
-      - clamav_db:/var/lib/clamav
       - scan_tmp:/tmp/scans
     networks:
       - mdmscan-net
@@ -106,7 +115,6 @@ volumes:
   pg_data:
   minio_data:
   redis_data:
-  clamav_db:
   scan_tmp:
 
 networks:
