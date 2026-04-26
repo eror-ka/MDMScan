@@ -12,26 +12,26 @@ export default async function HomePage() {
     <div className="space-y-10">
       <section>
         <h2 className="text-base font-semibold text-gray-300 mb-3">
-          Scan an image
+          Проверить образ
         </h2>
         <ScanForm />
       </section>
 
       <section>
         <h2 className="text-base font-semibold text-gray-300 mb-3">
-          Recent scans
+          История сканирований
         </h2>
         {scans.length === 0 ? (
-          <p className="text-gray-500 text-sm">No scans yet.</p>
+          <p className="text-gray-500 text-sm">Сканирований пока нет.</p>
         ) : (
           <div className="overflow-hidden rounded-lg border border-gray-800">
             <table className="w-full text-sm">
               <thead className="bg-gray-900 text-gray-400 text-xs uppercase tracking-wide">
                 <tr>
-                  <th className="px-4 py-3 text-left">Image</th>
-                  <th className="px-4 py-3 text-left">Status</th>
-                  <th className="px-4 py-3 text-right">Findings</th>
-                  <th className="px-4 py-3 text-left">Started</th>
+                  <th className="px-4 py-3 text-left">Образ</th>
+                  <th className="px-4 py-3 text-left">Статус</th>
+                  <th className="px-4 py-3 text-right">Находки</th>
+                  <th className="px-4 py-3 text-left">Запущен</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
