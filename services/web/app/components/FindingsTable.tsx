@@ -45,7 +45,7 @@ function groupFindings(findings: Finding[]) {
       map.delete(cat);
     }
   }
-  for (const [cat, items] of map) {
+  for (const [cat, items] of Array.from(map)) {
     result.push({ category: cat, findings: items, maxSeverity: maxSev(items) });
   }
   return result;
