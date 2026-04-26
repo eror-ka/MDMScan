@@ -85,7 +85,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /app
 
-# Заглушка — на Этапе 3b заменим на запуск Celery-воркера.
 COPY app /app/app
+COPY alembic.ini /app/alembic.ini
+COPY migrations /app/migrations
 
 CMD ["/usr/local/bin/entrypoint.sh"]

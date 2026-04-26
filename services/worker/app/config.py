@@ -18,6 +18,11 @@ class Settings:
     s3_region: str = os.getenv("S3_REGION", "us-east-1")
     s3_bucket_raw: str = os.getenv("S3_BUCKET_RAW", "raw-scans")
 
+    # PostgreSQL
+    postgres_dsn: str = os.getenv(
+        "POSTGRES_DSN", "postgresql://mdmscan:mdmscan@postgres:5432/mdmscan"
+    )
+
     # Сканирование
     scan_timeout_seconds: int = int(os.getenv("SCAN_TIMEOUT_SECONDS", "600"))
     scan_workdir: str = os.getenv("SCAN_WORKDIR", "/tmp/scans")

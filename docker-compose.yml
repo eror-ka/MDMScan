@@ -96,6 +96,7 @@ services:
       S3_BUCKET_RAW: raw-scans
       SCAN_WORKDIR: /tmp/scans
       SCAN_TIMEOUT_SECONDS: ${SCAN_TIMEOUT_SECONDS:-1800}
+      POSTGRES_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
       CELERY_LOGLEVEL: INFO
       CELERY_CONCURRENCY: 2
     depends_on:
