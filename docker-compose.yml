@@ -101,6 +101,21 @@ services:
     networks:
       - mdmscan-net
 
+  web:
+    build:
+      context: ./services/web
+    image: mdmscan-web:latest
+    container_name: mdmscan-web
+    restart: unless-stopped
+    environment:
+      API_URL: http://api:8000
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - api
+    networks:
+      - mdmscan-net
+
   worker:
     build:
       context: ./services/worker

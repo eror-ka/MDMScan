@@ -14,6 +14,15 @@ class ScanSubmitResponse(BaseModel):
     status: str
 
 
+class ScanListItem(BaseModel):
+    scan_id: str
+    image_ref: str
+    status: str
+    created_at: datetime
+    finished_at: datetime | None
+    findings_count: int
+
+
 class ScanJobOut(BaseModel):
     scan_id: str
     image_ref: str

@@ -14,6 +14,7 @@ from app.schemas import (
     FindingsListOut,
     FindingOut,
     ScanJobOut,
+    ScanListItem,
     ScanSubmitRequest,
     ScanSubmitResponse,
 )
@@ -21,6 +22,37 @@ from app.schemas import (
 router = APIRouter(prefix="/scans", tags=["scans"])
 
 DbDep = Annotated[Session, Depends(get_db)]
+
+
+@router.get("", response_model=list[ScanListItem])
+def list_scans(
+    db: DbDep,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> list[ScanListItem]:
+    count_sq = (
+        select(Finding.scan_job_id, func.count().label("cnt"))
+        .group_by(Finding.scan_job_id)
+        .subquery()
+    )
+    rows = db.execute(
+        select(ScanJob, count_sq.c.cnt)
+        .outerjoin(count_sq, ScanJob.id == count_sq.c.scan_job_id)
+        .order_by(ScanJob.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+    ).all()
+    return [
+        ScanListItem(
+            scan_id=job.id,
+            image_ref=job.image_ref,
+            status=job.status,
+            created_at=job.created_at,
+            finished_at=job.finished_at,
+            findings_count=cnt or 0,
+        )
+        for job, cnt in rows
+    ]
 
 
 @router.post("", status_code=202, response_model=ScanSubmitResponse)
