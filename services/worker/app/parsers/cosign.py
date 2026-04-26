@@ -13,20 +13,24 @@ def parse(path: Path) -> list[Finding]:
 
     signed = any(kw in text for kw in ("Attestations", "Signatures", "sha256:"))
     if signed:
-        return [Finding(
+        return [
+            Finding(
+                category="supply_chain",
+                severity="INFO",
+                title="Образ подписан (Cosign)",
+                description=text.strip(),
+                raw_ref="cosign-signed",
+                sources=["cosign"],
+            )
+        ]
+    return [
+        Finding(
             category="supply_chain",
             severity="INFO",
-            title="Образ подписан (Cosign)",
-            description=text.strip(),
-            raw_ref="cosign-signed",
+            title="Образ не подписан (Cosign)",
+            description="Supply-chain артефакты (подписи, attestations) не обнаружены.",
+            raw_ref="cosign-unsigned",
             sources=["cosign"],
-        )]
-    return [Finding(
-        category="supply_chain",
-        severity="INFO",
-        title="Образ не подписан (Cosign)",
-        description="Supply-chain артефакты (подписи, attestations) не обнаружены.",
-        raw_ref="cosign-unsigned",
-        sources=["cosign"],
-        fix_advice="Подписать образ с помощью cosign sign при публикации в registry",
-    )]
+            fix_advice="Подписать образ с помощью cosign sign при публикации в registry",
+        )
+    ]

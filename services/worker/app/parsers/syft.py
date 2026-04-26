@@ -29,11 +29,13 @@ def parse(path: Path) -> list[Finding]:
     if licenses:
         desc += f" Лицензии: {', '.join(sorted(licenses)[:10])}."
 
-    return [Finding(
-        category="supply_chain",
-        severity="INFO",
-        title=f"SBOM: {pkg_count} компонентов",
-        description=desc,
-        raw_ref="syft-sbom",
-        sources=["syft"],
-    )]
+    return [
+        Finding(
+            category="supply_chain",
+            severity="INFO",
+            title=f"SBOM: {pkg_count} компонентов",
+            description=desc,
+            raw_ref="syft-sbom",
+            sources=["syft"],
+        )
+    ]

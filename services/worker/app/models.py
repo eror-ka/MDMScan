@@ -15,7 +15,9 @@ class Base(DeclarativeBase):
 class ScanJob(Base):
     __tablename__ = "scan_jobs"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
     image_ref: Mapped[str] = mapped_column(String(512), nullable=False, index=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="running")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -34,7 +36,9 @@ class Finding(Base):
     __tablename__ = "findings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    scan_job_id: Mapped[str] = mapped_column(String(36), ForeignKey("scan_jobs.id"), nullable=False, index=True)
+    scan_job_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("scan_jobs.id"), nullable=False, index=True
+    )
     fingerprint: Mapped[str] = mapped_column(String(40), nullable=False)
     category: Mapped[str] = mapped_column(String(20), nullable=False)
     severity: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
@@ -50,14 +54,18 @@ class Finding(Base):
 
     scan_job: Mapped[ScanJob] = relationship("ScanJob", back_populates="findings")
 
-    __table_args__ = (UniqueConstraint("scan_job_id", "fingerprint", name="uq_finding_fingerprint"),)
+    __table_args__ = (
+        UniqueConstraint("scan_job_id", "fingerprint", name="uq_finding_fingerprint"),
+    )
 
 
 class ScanArtifact(Base):
     __tablename__ = "scan_artifacts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    scan_job_id: Mapped[str] = mapped_column(String(36), ForeignKey("scan_jobs.id"), nullable=False, index=True)
+    scan_job_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("scan_jobs.id"), nullable=False, index=True
+    )
     scanner: Mapped[str] = mapped_column(String(32), nullable=False)
     s3_bucket: Mapped[str] = mapped_column(String(128), nullable=False)
     s3_key: Mapped[str] = mapped_column(String(512), nullable=False)

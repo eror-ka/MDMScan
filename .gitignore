@@ -34,3 +34,7 @@ out/
 /data/
 *.log
 scan-results/
+
+# Local review files (not for repository)
+CLAUDE.md
+forClaude/

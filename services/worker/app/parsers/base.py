@@ -3,7 +3,14 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass, field
 
-SEVERITY_ORDER = {"CRITICAL": 5, "HIGH": 4, "MEDIUM": 3, "LOW": 2, "INFO": 1, "UNKNOWN": 0}
+SEVERITY_ORDER = {
+    "CRITICAL": 5,
+    "HIGH": 4,
+    "MEDIUM": 3,
+    "LOW": 2,
+    "INFO": 1,
+    "UNKNOWN": 0,
+}
 
 
 def _max_severity(a: str, b: str) -> str:
@@ -26,13 +33,15 @@ class Finding:
 
     @property
     def fingerprint(self) -> str:
-        key = "|".join([
-            self.category,
-            self.raw_ref or self.title,
-            self.package or "",
-            self.version or "",
-            self.location or "",
-        ])
+        key = "|".join(
+            [
+                self.category,
+                self.raw_ref or self.title,
+                self.package or "",
+                self.version or "",
+                self.location or "",
+            ]
+        )
         return hashlib.sha1(key.encode()).hexdigest()  # noqa: S324
 
 

@@ -20,13 +20,15 @@ def parse(path: Path) -> list[Finding]:
         sev = _SEV.get(level, "INFO")
         alerts = detail.get("alerts", [])
         desc = "; ".join(alerts) if alerts else ""
-        findings.append(Finding(
-            category="misconfig",
-            severity=sev,
-            title=detail.get("title", detail.get("code", "dockle finding")),
-            description=desc,
-            raw_ref=detail.get("code"),
-            sources=["dockle"],
-            fix_advice=desc or None,
-        ))
+        findings.append(
+            Finding(
+                category="misconfig",
+                severity=sev,
+                title=detail.get("title", detail.get("code", "dockle finding")),
+                description=desc,
+                raw_ref=detail.get("code"),
+                sources=["dockle"],
+                fix_advice=desc or None,
+            )
+        )
     return findings

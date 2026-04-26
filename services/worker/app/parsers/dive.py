@@ -38,16 +38,20 @@ def parse(path: Path) -> list[Finding]:
     )
     advice = None
     if wasted_bytes > 0:
-        advice = "Объединить RUN-команды и очищать кэш пакетного менеджера в одном слое."
+        advice = (
+            "Объединить RUN-команды и очищать кэш пакетного менеджера в одном слое."
+        )
         if top_files:
             advice += f" Дублирующиеся файлы: {top_files}"
 
-    return [Finding(
-        category="hygiene",
-        severity=sev,
-        title=f"Эффективность образа: {round(efficiency * 100, 1)}%",
-        description=desc,
-        raw_ref="dive-efficiency",
-        sources=["dive"],
-        fix_advice=advice,
-    )]
+    return [
+        Finding(
+            category="hygiene",
+            severity=sev,
+            title=f"Эффективность образа: {round(efficiency * 100, 1)}%",
+            description=desc,
+            raw_ref="dive-efficiency",
+            sources=["dive"],
+            fix_advice=advice,
+        )
+    ]

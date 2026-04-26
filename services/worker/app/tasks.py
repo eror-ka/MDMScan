@@ -74,13 +74,15 @@ def scan_image(self, image_ref: str) -> dict:
                 try:
                     file_size = artifact_path.stat().st_size
                     upload_file(artifact_path, settings.s3_bucket_raw, s3_key)
-                    session.add(ScanArtifact(
-                        scan_job_id=scan_id,
-                        scanner=scanner_name,
-                        s3_bucket=settings.s3_bucket_raw,
-                        s3_key=s3_key,
-                        file_size=file_size,
-                    ))
+                    session.add(
+                        ScanArtifact(
+                            scan_job_id=scan_id,
+                            scanner=scanner_name,
+                            s3_bucket=settings.s3_bucket_raw,
+                            s3_key=s3_key,
+                            file_size=file_size,
+                        )
+                    )
                 except Exception as exc:
                     log.warning("upload.error", scanner=scanner_name, err=str(exc))
 
@@ -92,21 +94,23 @@ def scan_image(self, image_ref: str) -> dict:
 
             deduped = parser_base.deduplicate(all_findings)
             for f in deduped:
-                session.add(FindingModel(
-                    scan_job_id=scan_id,
-                    fingerprint=f.fingerprint,
-                    category=f.category,
-                    severity=f.severity,
-                    title=f.title,
-                    description=f.description or None,
-                    package=f.package,
-                    version=f.version,
-                    fix_version=f.fix_version,
-                    location=f.location,
-                    raw_ref=f.raw_ref,
-                    sources=f.sources,
-                    fix_advice=f.fix_advice,
-                ))
+                session.add(
+                    FindingModel(
+                        scan_job_id=scan_id,
+                        fingerprint=f.fingerprint,
+                        category=f.category,
+                        severity=f.severity,
+                        title=f.title,
+                        description=f.description or None,
+                        package=f.package,
+                        version=f.version,
+                        fix_version=f.fix_version,
+                        location=f.location,
+                        raw_ref=f.raw_ref,
+                        sources=f.sources,
+                        fix_advice=f.fix_advice,
+                    )
+                )
 
             job = session.get(ScanJob, scan_id)
             job.status = "done"

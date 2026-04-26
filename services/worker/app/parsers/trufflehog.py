@@ -41,14 +41,16 @@ def parse(path: Path) -> list[Finding]:
         if verified:
             desc += " [VERIFIED — секрет активен]"
 
-        findings.append(Finding(
-            category="secret",
-            severity=sev,
-            title=f"Секрет: {detector}" + (" (подтверждён)" if verified else ""),
-            description=desc,
-            location=location or None,
-            raw_ref=f"trufflehog-{detector}",
-            sources=["trufflehog"],
-            fix_advice="Удалить секрет из истории слоёв образа и сменить учётные данные",
-        ))
+        findings.append(
+            Finding(
+                category="secret",
+                severity=sev,
+                title=f"Секрет: {detector}" + (" (подтверждён)" if verified else ""),
+                description=desc,
+                location=location or None,
+                raw_ref=f"trufflehog-{detector}",
+                sources=["trufflehog"],
+                fix_advice="Удалить секрет из истории слоёв образа и сменить учётные данные",
+            )
+        )
     return findings

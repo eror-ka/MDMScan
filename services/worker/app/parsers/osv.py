@@ -46,15 +46,17 @@ def parse(path: Path) -> list[Finding]:
                         sev = candidate
                         break
 
-                findings.append(Finding(
-                    category="vuln",
-                    severity=sev,
-                    title=summary,
-                    description=vuln.get("details", ""),
-                    package=pkg_name,
-                    version=pkg_ver,
-                    raw_ref=vuln_id,
-                    sources=["osv-scanner"],
-                    fix_advice=f"Обновить {pkg_name} {pkg_ver}: {vuln_id}",
-                ))
+                findings.append(
+                    Finding(
+                        category="vuln",
+                        severity=sev,
+                        title=summary,
+                        description=vuln.get("details", ""),
+                        package=pkg_name,
+                        version=pkg_ver,
+                        raw_ref=vuln_id,
+                        sources=["osv-scanner"],
+                        fix_advice=f"Обновить {pkg_name} {pkg_ver}: {vuln_id}",
+                    )
+                )
     return findings
