@@ -82,6 +82,25 @@ services:
     networks:
       - mdmscan-net
 
+  api:
+    build:
+      context: ./services/api
+    image: mdmscan-api:latest
+    container_name: mdmscan-api
+    restart: unless-stopped
+    environment:
+      POSTGRES_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mdmscan-net
+
   worker:
     build:
       context: ./services/worker

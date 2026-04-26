@@ -50,8 +50,9 @@ _PARSERS: dict[str, tuple] = {
 
 
 @celery_app.task(name="mdmscan.scan_image", bind=True)
-def scan_image(self, image_ref: str) -> dict:
-    scan_id = str(uuid.uuid4())
+def scan_image(self, image_ref: str, scan_id: str | None = None) -> dict:
+    if scan_id is None:
+        scan_id = str(uuid.uuid4())
     workdir = Path(settings.scan_workdir) / scan_id
     log.info("scan.start", scan_id=scan_id, image=image_ref)
 
