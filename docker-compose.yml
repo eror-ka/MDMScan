@@ -116,6 +116,32 @@ services:
     networks:
       - mdmscan-net
 
+  bot:
+    build:
+      context: ./services/bot
+    image: mdmscan-bot:latest
+    container_name: mdmscan-bot
+    restart: unless-stopped
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      API_URL: http://api:8000
+    depends_on:
+      - api
+    networks:
+      - mdmscan-net
+
+  miniapp-bot:
+    build:
+      context: ./services/miniapp_bot
+    image: mdmscan-miniapp-bot:latest
+    container_name: mdmscan-miniapp-bot
+    restart: unless-stopped
+    environment:
+      BOT_TOKEN: ${BOT_MINIAPP_TOKEN}
+      WEB_URL: ${WEB_URL:-http://localhost:3000}
+    networks:
+      - mdmscan-net
+
   worker:
     build:
       context: ./services/worker
