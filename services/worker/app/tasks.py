@@ -39,12 +39,6 @@ celery_app.conf.update(
 )
 
 _SEVERITY_WEIGHT = {"CRITICAL": 5.0, "HIGH": 1.0, "MEDIUM": 0.1}
-_CAT_CONFIG: dict[str, tuple[int, float]] = {
-    "vuln": (65, 20.0),
-    "secret": (10, 5.0),
-    "misconfig": (20, 20.0),
-    "hygiene": (5, 10.0),
-}
 
 
 def _compute_security_score(findings: list[parser_base.Finding]) -> int:
@@ -53,21 +47,51 @@ def _compute_security_score(findings: list[parser_base.Finding]) -> int:
         cats.setdefault(f.category, []).append(f)
 
     total_penalty = 0.0
-    for cat, (max_penalty, threshold) in _CAT_CONFIG.items():
-        cat_findings = cats.get(cat, [])
-        badness = sum(_SEVERITY_WEIGHT.get(f.severity, 0.0) for f in cat_findings)
-        if badness > 0:
-            total_penalty += min(float(max_penalty), badness / threshold * max_penalty)
 
+    # Vulnerabilities (max -65): tiered, non-additive — worst tier applies
+    vuln = cats.get("vuln", [])
+    n_crit = sum(1 for f in vuln if f.severity == "CRITICAL")
+    n_high = sum(1 for f in vuln if f.severity == "HIGH")
+    if n_crit > 1:
+        total_penalty += 65
+    elif n_crit == 1:
+        total_penalty += 50
+    elif n_high >= 5:
+        total_penalty += 10
+    elif n_high >= 1:
+        total_penalty += 5
+
+    # Misconfigurations (max -20): additive by severity presence
+    misconfig = cats.get("misconfig", [])
+    mc_penalty = 0.0
+    if any(f.severity == "CRITICAL" for f in misconfig):
+        mc_penalty += 12.5
+    if any(f.severity == "HIGH" for f in misconfig):
+        mc_penalty += 5.0
+    if any(f.severity == "MEDIUM" for f in misconfig):
+        mc_penalty += 2.5
+    total_penalty += min(20.0, mc_penalty)
+
+    # Secrets (max -10): badness-based, threshold = 5 HIGH-equiv
+    secret = cats.get("secret", [])
+    s_badness = sum(_SEVERITY_WEIGHT.get(f.severity, 0.0) for f in secret)
+    if s_badness > 0:
+        total_penalty += min(10.0, s_badness / 5.0 * 10.0)
+
+    # Hygiene / image efficiency (max -5): badness-based, threshold = 10 HIGH-equiv
+    hygiene = cats.get("hygiene", [])
+    h_badness = sum(_SEVERITY_WEIGHT.get(f.severity, 0.0) for f in hygiene)
+    if h_badness > 0:
+        total_penalty += min(5.0, h_badness / 10.0 * 5.0)
+
+    # Minimum 1-point penalty for any findings (accounts for LOW/UNKNOWN)
     if findings and total_penalty < 1.0:
         total_penalty = 1.0
 
     score = max(0, round(100 - total_penalty))
 
-    has_critical_vuln = any(
-        f.severity == "CRITICAL" and f.category == "vuln" for f in findings
-    )
-    if not has_critical_vuln:
+    # Floor at 75 when no CRITICAL vulnerabilities
+    if not any(f.severity == "CRITICAL" and f.category == "vuln" for f in findings):
         score = max(75, score)
 
     return score

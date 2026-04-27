@@ -88,9 +88,11 @@ export default async function HomePage() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
-                        {new Date(scan.created_at).toLocaleString("ru-RU")}
+                        {new Date(scan.created_at).toLocaleString("ru-RU", {
+                          timeZone: "Europe/Moscow",
+                        })}
                         {scan.finished_at &&
-                          ` — ${new Date(scan.finished_at).toLocaleTimeString("ru-RU")}`}
+                          ` — ${new Date(scan.finished_at).toLocaleTimeString("ru-RU", { timeZone: "Europe/Moscow" })}`}
                       </td>
                       <td className="px-4 py-3">
                         <form action={deleteScan}>
