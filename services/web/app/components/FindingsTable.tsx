@@ -42,7 +42,7 @@ function AnalyticsSummary({
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-950 text-gray-500 text-sm uppercase tracking-wide border-t border-gray-800">
+          <thead className="bg-gray-950 text-gray-300 text-sm uppercase tracking-wide border-t border-gray-800">
             <tr>
               <th className="px-4 py-2 text-left">Цель</th>
               <th className="px-4 py-2 text-center">Тип</th>
@@ -67,7 +67,7 @@ function AnalyticsSummary({
                   <td
                     key={cat}
                     className={`px-4 py-3 text-center font-mono text-base font-bold ${
-                      n > 0 ? "text-red-400" : "text-green-400"
+                      n > 0 ? "text-red-400" : "text-gray-500"
                     }`}
                   >
                     {n}
@@ -111,9 +111,6 @@ export default function FindingsTable({ imageRef, findings }: Props) {
 
       {CAT_ORDER.map((cat) => {
         const items = map.get(cat) ?? [];
-        items.sort(
-          (a, b) => SEV_ORDER.indexOf(a.severity) - SEV_ORDER.indexOf(b.severity),
-        );
         return (
           <CategoryTable
             key={cat}

@@ -7,6 +7,7 @@ export interface ScanListItem {
   created_at: string;
   finished_at: string | null;
   findings_count: number;
+  security_score: number | null;
 }
 
 export interface ScanJob extends ScanListItem {

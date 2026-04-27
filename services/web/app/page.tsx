@@ -1,21 +1,23 @@
 import Link from "next/link";
+import { deleteScan } from "./actions";
 import ScanForm from "./components/ScanForm";
 import StatusBadge from "./components/StatusBadge";
 import { listScans } from "./lib/api";
 
 export const dynamic = "force-dynamic";
 
-function calcScore(findingsCount: number, status: string): number | null {
-  if (status !== "done") return null;
-  if (findingsCount === 0) return 100;
-  return Math.max(0, Math.round(100 - Math.log10(findingsCount + 1) * 25));
-}
-
 function scoreColor(score: number): string {
   if (score >= 80) return "text-green-400";
   if (score >= 60) return "text-yellow-400";
   if (score >= 40) return "text-orange-400";
   return "text-red-400";
+}
+
+function scanDuration(createdAt: string, finishedAt: string | null): number | null {
+  if (!finishedAt) return null;
+  return Math.round(
+    (new Date(finishedAt).getTime() - new Date(createdAt).getTime()) / 1000,
+  );
 }
 
 export default async function HomePage() {
@@ -43,14 +45,14 @@ export default async function HomePage() {
                 <tr>
                   <th className="px-4 py-3 text-left">Образ</th>
                   <th className="px-4 py-3 text-left">Статус</th>
-                  <th className="px-4 py-3 text-right">Находки</th>
                   <th className="px-4 py-3 text-right">Безопасность (0–100)</th>
                   <th className="px-4 py-3 text-left">Проверен</th>
+                  <th className="px-4 py-3 text-left">Удалить скан</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
                 {scans.map((scan) => {
-                  const score = calcScore(scan.findings_count, scan.status);
+                  const duration = scanDuration(scan.created_at, scan.finished_at);
                   return (
                     <tr
                       key={scan.scan_id}
@@ -65,22 +67,45 @@ export default async function HomePage() {
                         </Link>
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={scan.status} />
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono text-gray-300">
-                        {scan.findings_count}
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={scan.status} />
+                          {duration !== null && (
+                            <span className="text-gray-500 text-xs">
+                              ({duration}с)
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-right font-mono font-bold text-lg">
-                        {score !== null ? (
-                          <span className={scoreColor(score)}>{score}</span>
+                        {scan.security_score !== null ? (
+                          <span className={scoreColor(scan.security_score)}>
+                            {scan.security_score}
+                          </span>
                         ) : (
-                          <span className="text-gray-600 text-sm font-normal">—</span>
+                          <span className="text-gray-600 text-sm font-normal">
+                            —
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
                         {new Date(scan.created_at).toLocaleString("ru-RU")}
                         {scan.finished_at &&
                           ` — ${new Date(scan.finished_at).toLocaleTimeString("ru-RU")}`}
+                      </td>
+                      <td className="px-4 py-3">
+                        <form action={deleteScan}>
+                          <input
+                            type="hidden"
+                            name="scan_id"
+                            value={scan.scan_id}
+                          />
+                          <button
+                            type="submit"
+                            className="px-3 py-1 text-xs bg-red-900/40 text-red-400 hover:bg-red-900/70 rounded transition-colors"
+                          >
+                            Очистить
+                          </button>
+                        </form>
                       </td>
                     </tr>
                   );

@@ -23,6 +23,7 @@ class ScanJob(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     scanner_statuses: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    security_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     findings: Mapped[list[Finding]] = relationship(
         "Finding", back_populates="scan_job", cascade="all, delete-orphan"

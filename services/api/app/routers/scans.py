@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -50,6 +50,7 @@ def list_scans(
             created_at=job.created_at,
             finished_at=job.finished_at,
             findings_count=cnt or 0,
+            security_score=job.security_score,
         )
         for job, cnt in rows
     ]
@@ -83,7 +84,18 @@ def get_scan(scan_id: str, db: DbDep) -> ScanJobOut:
         finished_at=job.finished_at,
         scanner_statuses=job.scanner_statuses,
         findings_count=findings_count or 0,
+        security_score=job.security_score,
     )
+
+
+@router.delete("/{scan_id}", status_code=204)
+def delete_scan(scan_id: str, db: DbDep) -> Response:
+    job = db.get(ScanJob, scan_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Scan not found")
+    db.delete(job)
+    db.commit()
+    return Response(status_code=204)
 
 
 @router.get("/{scan_id}/findings", response_model=FindingsListOut)

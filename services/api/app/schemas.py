@@ -21,6 +21,7 @@ class ScanListItem(BaseModel):
     created_at: datetime
     finished_at: datetime | None
     findings_count: int
+    security_score: int | None = None
 
 
 class ScanJobOut(BaseModel):
@@ -31,6 +32,7 @@ class ScanJobOut(BaseModel):
     finished_at: datetime | None
     scanner_statuses: dict | None
     findings_count: int
+    security_score: int | None = None
 
 
 class FindingOut(BaseModel):

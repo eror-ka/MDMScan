@@ -38,6 +38,33 @@ celery_app.conf.update(
     broker_connection_retry_on_startup=True,
 )
 
+_SEVERITY_WEIGHT = {"CRITICAL": 5.0, "HIGH": 1.0, "MEDIUM": 0.1}
+_CAT_CONFIG: dict[str, tuple[int, float]] = {
+    "vuln": (65, 20.0),
+    "secret": (10, 5.0),
+    "misconfig": (20, 20.0),
+    "hygiene": (5, 10.0),
+}
+
+
+def _compute_security_score(findings: list[parser_base.Finding]) -> int:
+    cats: dict[str, list[parser_base.Finding]] = {}
+    for f in findings:
+        cats.setdefault(f.category, []).append(f)
+
+    total_penalty = 0.0
+    for cat, (max_penalty, threshold) in _CAT_CONFIG.items():
+        cat_findings = cats.get(cat, [])
+        badness = sum(_SEVERITY_WEIGHT.get(f.severity, 0.0) for f in cat_findings)
+        if badness > 0:
+            total_penalty += min(float(max_penalty), badness / threshold * max_penalty)
+
+    if findings and total_penalty < 1.0:
+        total_penalty = 1.0
+
+    return max(0, round(100 - total_penalty))
+
+
 _PARSERS: dict[str, tuple] = {
     "trivy": (trivy.parse, "trivy.json"),
     "syft": (syft.parse, "syft.spdx.json"),
@@ -117,6 +144,7 @@ def scan_image(self, image_ref: str, scan_id: str | None = None) -> dict:
             job.status = "done"
             job.finished_at = datetime.utcnow()
             job.scanner_statuses = scanner_statuses
+            job.security_score = _compute_security_score(deduped)
 
         severity_counts: dict[str, int] = {}
         for f in deduped:

@@ -6,15 +6,6 @@ import SeverityBadge from "./SeverityBadge";
 
 const SEV_ORDER = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO", "UNKNOWN"];
 
-const SEV_LABELS: Record<string, string> = {
-  CRITICAL: "КРИТИЧЕСКИЙ",
-  HIGH: "ВЫСОКИЙ",
-  MEDIUM: "СРЕДНИЙ",
-  LOW: "НИЗКИЙ",
-  INFO: "ИНФОРМАЦИЯ",
-  UNKNOWN: "НЕИЗВЕСТНЫЙ",
-};
-
 const CAT_LABEL: Record<string, string> = {
   vuln: "Уязвимости",
   secret: "Секреты",
@@ -22,26 +13,6 @@ const CAT_LABEL: Record<string, string> = {
   supply_chain: "Цепочка поставок",
   hygiene: "Гигиена образа",
 };
-
-function deriveStatus(f: Finding): string {
-  return f.fix_version ? "Исправлена" : "Затронута";
-}
-
-function SeveritySummary({ findings }: { findings: Finding[] }) {
-  const counts: Record<string, number> = {};
-  for (const f of findings) {
-    counts[f.severity] = (counts[f.severity] ?? 0) + 1;
-  }
-  const parts = SEV_ORDER.filter((s) => counts[s]).map(
-    (s) => `${SEV_LABELS[s] ?? s}: ${counts[s]}`,
-  );
-  return (
-    <span className="text-sm text-gray-500">
-      Всего: {findings.length}
-      {parts.length > 0 && ` (${parts.join(", ")})`}
-    </span>
-  );
-}
 
 function EmptyRow({ colSpan }: { colSpan: number }) {
   return (
@@ -65,12 +36,11 @@ function VulnTableContent({
 }) {
   return (
     <table className="w-full text-sm">
-      <thead className="bg-gray-950 text-gray-500 text-sm uppercase tracking-wide border-t border-gray-800">
+      <thead className="bg-gray-950 text-gray-400 text-sm uppercase tracking-wide border-t border-gray-800">
         <tr>
           <th className="px-4 py-2 text-left">Библиотека</th>
           <th className="px-4 py-2 text-left">Уязвимость</th>
           <th className="px-4 py-2 text-left">Серьёзность</th>
-          <th className="px-4 py-2 text-left">Статус</th>
           <th className="px-4 py-2 text-left">Установленная версия</th>
           <th className="px-4 py-2 text-left">Исправленная версия</th>
           <th className="px-4 py-2 text-left">Название</th>
@@ -80,7 +50,7 @@ function VulnTableContent({
       {open && (
         <tbody className="divide-y divide-gray-800/60">
           {findings.length === 0 ? (
-            <EmptyRow colSpan={8} />
+            <EmptyRow colSpan={7} />
           ) : (
             findings.map((f) => (
               <tr key={f.id} className="hover:bg-gray-900/30">
@@ -92,15 +62,6 @@ function VulnTableContent({
                 </td>
                 <td className="px-4 py-2 whitespace-nowrap">
                   <SeverityBadge severity={f.severity} />
-                </td>
-                <td className="px-4 py-2 whitespace-nowrap">
-                  <span
-                    className={
-                      f.fix_version ? "text-green-400" : "text-orange-400"
-                    }
-                  >
-                    {deriveStatus(f)}
-                  </span>
                 </td>
                 <td className="px-4 py-2 font-mono text-gray-500 whitespace-nowrap">
                   {f.version ?? "—"}
@@ -139,7 +100,7 @@ function GenericTableContent({
   const colSpan = 3 + (hasLocation ? 1 : 0);
   return (
     <table className="w-full text-sm">
-      <thead className="bg-gray-950 text-gray-500 text-sm uppercase tracking-wide border-t border-gray-800">
+      <thead className="bg-gray-950 text-gray-400 text-sm uppercase tracking-wide border-t border-gray-800">
         <tr>
           <th className="px-4 py-2 text-left">Серьёзность</th>
           <th className="px-4 py-2 text-left">Проверка / Описание</th>
@@ -196,11 +157,19 @@ export default function CategoryTable({ category, findings, maxSeverity }: Props
   const isVuln = category === "vuln";
   const badgeSeverity = findings.length === 0 ? "INFO" : maxSeverity;
 
+  // Sort findings by severity
+  const sorted = [...findings].sort(
+    (a, b) => SEV_ORDER.indexOf(a.severity) - SEV_ORDER.indexOf(b.severity),
+  );
+
   return (
     <div className="rounded-lg border border-gray-800 overflow-hidden">
-      <div className="bg-gray-900 px-4 py-3 flex items-center gap-3">
-        <SeverityBadge severity={badgeSeverity} />
-        <div className="flex-1 flex items-center justify-center gap-3">
+      {/* 3-column grid: badge left | title+button center | empty right */}
+      <div className="bg-gray-900 px-4 py-3 grid grid-cols-3 items-center">
+        <div>
+          <SeverityBadge severity={badgeSeverity} />
+        </div>
+        <div className="flex items-center justify-center gap-3">
           <span className="font-bold text-gray-100 text-lg">{label}</span>
           <button
             onClick={() => setOpen(!open)}
@@ -210,13 +179,13 @@ export default function CategoryTable({ category, findings, maxSeverity }: Props
             {open ? "▼" : "▶"}
           </button>
         </div>
-        <SeveritySummary findings={findings} />
+        <div />
       </div>
       <div className="overflow-x-auto">
         {isVuln ? (
-          <VulnTableContent findings={findings} open={open} />
+          <VulnTableContent findings={sorted} open={open} />
         ) : (
-          <GenericTableContent findings={findings} open={open} />
+          <GenericTableContent findings={sorted} open={open} />
         )}
       </div>
     </div>
