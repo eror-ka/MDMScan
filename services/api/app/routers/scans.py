@@ -59,6 +59,8 @@ def list_scans(
 @router.post("", status_code=202, response_model=ScanSubmitResponse)
 def submit_scan(body: ScanSubmitRequest, db: DbDep) -> ScanSubmitResponse:
     scan_id = str(uuid.uuid4())
+    db.add(ScanJob(id=scan_id, image_ref=body.image, status="pending"))
+    db.commit()
     celery_app.send_task(
         "mdmscan.scan_image",
         args=[body.image],

@@ -9,15 +9,6 @@ const CAT_LABEL: Record<string, string> = {
   supply_chain: "Цепочка поставок",
   hygiene: "Гигиена образа",
 };
-const SEV_ORDER = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO", "UNKNOWN"];
-
-function maxSev(items: Finding[]): string {
-  for (const s of SEV_ORDER) {
-    if (items.some((f) => f.severity === s)) return s;
-  }
-  return "UNKNOWN";
-}
-
 function countByCategory(findings: Finding[]) {
   const counts: Record<string, number> = {};
   for (const f of findings) {
@@ -100,7 +91,7 @@ export default function FindingsTable({ imageRef, findings }: Props) {
       <div className="text-xs text-gray-500 bg-gray-900/50 rounded px-4 py-2 border border-gray-800 flex gap-4">
         <span className="font-medium text-gray-400">Заметки:</span>
         <span>
-          <span className="font-mono">—</span> Не сканировалось
+          <span className="font-mono text-gray-400">—</span> Не сканировалось
         </span>
         <span>
           <span className="font-mono text-green-400">0</span> Безопасно
@@ -116,7 +107,6 @@ export default function FindingsTable({ imageRef, findings }: Props) {
             key={cat}
             category={cat}
             findings={items}
-            maxSeverity={maxSev(items)}
           />
         );
       })}

@@ -1,7 +1,7 @@
 const config: Record<string, { label: string; cls: string }> = {
   done: { label: "завершён", cls: "bg-green-900 text-green-400" },
   running: { label: "выполняется", cls: "bg-blue-900 text-blue-400" },
-  pending: { label: "ожидает", cls: "bg-yellow-900 text-yellow-400" },
+  pending: { label: "в очереди", cls: "bg-yellow-900 text-yellow-400" },
   failed: { label: "ошибка", cls: "bg-red-900 text-red-400" },
 };
 

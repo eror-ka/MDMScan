@@ -66,13 +66,17 @@ function VulnTableContent({
                 <td className="px-4 py-2 font-mono text-gray-500 whitespace-nowrap">
                   {f.version ?? "—"}
                 </td>
-                <td className="px-4 py-2 font-mono text-green-400 whitespace-nowrap">
-                  {f.fix_version ?? "—"}
+                <td className="px-4 py-2 font-mono whitespace-nowrap">
+                  {f.fix_version ? (
+                    <span className="text-green-400">{f.fix_version}</span>
+                  ) : (
+                    <span className="text-gray-500">—</span>
+                  )}
                 </td>
-                <td className="px-4 py-2 text-gray-300 max-w-sm">
-                  <div className="line-clamp-2">{f.title}</div>
+                <td className="px-4 py-2 text-gray-300">
+                  <div>{f.title}</div>
                   {f.description && f.description !== f.title && (
-                    <div className="text-gray-600 text-xs mt-0.5 line-clamp-1">
+                    <div className="text-gray-600 text-xs mt-0.5">
                       {f.description}
                     </div>
                   )}
@@ -148,38 +152,28 @@ function GenericTableContent({
 interface Props {
   category: string;
   findings: Finding[];
-  maxSeverity: string;
 }
 
-export default function CategoryTable({ category, findings, maxSeverity }: Props) {
+export default function CategoryTable({ category, findings }: Props) {
   const [open, setOpen] = useState(true);
   const label = CAT_LABEL[category] ?? category;
   const isVuln = category === "vuln";
-  const badgeSeverity = findings.length === 0 ? "INFO" : maxSeverity;
 
-  // Sort findings by severity
   const sorted = [...findings].sort(
     (a, b) => SEV_ORDER.indexOf(a.severity) - SEV_ORDER.indexOf(b.severity),
   );
 
   return (
     <div className="rounded-lg border border-gray-800 overflow-hidden">
-      {/* 3-column grid: badge left | title+button center | empty right */}
-      <div className="bg-gray-900 px-4 py-3 grid grid-cols-3 items-center">
-        <div>
-          <SeverityBadge severity={badgeSeverity} />
-        </div>
-        <div className="flex items-center justify-center gap-3">
-          <span className="font-bold text-gray-100 text-lg">{label}</span>
-          <button
-            onClick={() => setOpen(!open)}
-            className="text-gray-300 hover:text-white transition-colors text-lg select-none"
-            title={open ? "Свернуть" : "Развернуть"}
-          >
-            {open ? "▼" : "▶"}
-          </button>
-        </div>
-        <div />
+      <div className="bg-gray-900 px-4 py-3 flex items-center justify-center gap-3">
+        <span className="font-bold text-gray-100 text-lg">{label}</span>
+        <button
+          onClick={() => setOpen(!open)}
+          className="text-gray-300 hover:text-white transition-colors text-lg select-none"
+          title={open ? "Свернуть" : "Развернуть"}
+        >
+          {open ? "▼" : "▶"}
+        </button>
       </div>
       <div className="overflow-x-auto">
         {isVuln ? (

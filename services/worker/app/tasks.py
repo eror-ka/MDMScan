@@ -62,7 +62,15 @@ def _compute_security_score(findings: list[parser_base.Finding]) -> int:
     if findings and total_penalty < 1.0:
         total_penalty = 1.0
 
-    return max(0, round(100 - total_penalty))
+    score = max(0, round(100 - total_penalty))
+
+    has_critical_vuln = any(
+        f.severity == "CRITICAL" and f.category == "vuln" for f in findings
+    )
+    if not has_critical_vuln:
+        score = max(75, score)
+
+    return score
 
 
 _PARSERS: dict[str, tuple] = {
@@ -84,7 +92,11 @@ def scan_image(self, image_ref: str, scan_id: str | None = None) -> dict:
     log.info("scan.start", scan_id=scan_id, image=image_ref)
 
     with get_session() as session:
-        session.add(ScanJob(id=scan_id, image_ref=image_ref, status="running"))
+        job = session.get(ScanJob, scan_id)
+        if job is None:
+            session.add(ScanJob(id=scan_id, image_ref=image_ref, status="running"))
+        else:
+            job.status = "running"
 
     try:
         results = run_all(image_ref, workdir)
