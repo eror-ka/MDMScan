@@ -6,7 +6,6 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     bot_token: str
     api_url: str = "http://api:8000"
-    proxy_url: str | None = None
 
     class Config:
         env_file = ".env"

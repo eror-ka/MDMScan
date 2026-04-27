@@ -4,7 +4,6 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher, Router
-from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.filters import Command, CommandStart
 from aiogram.types import (
     BotCommand,
@@ -112,8 +111,7 @@ async def cmd_help(message: Message) -> None:
 
 async def main() -> None:
     logging.basicConfig(level=logging.INFO)
-    session = AiohttpSession(proxy=settings.proxy_url) if settings.proxy_url else None
-    bot = Bot(token=settings.bot_token, session=session)
+    bot = Bot(token=settings.bot_token)
     dp = Dispatcher()
     dp.include_router(router)
 
