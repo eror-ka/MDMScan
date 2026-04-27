@@ -141,8 +141,38 @@ SCANNERS: list[ScannerSpec] = [
 
 
 def docker_pull(image: str) -> None:
+    """Pull image from registry; fall back to local cache on pull failure."""
     log.info("docker.pull", image=image)
-    subprocess.run(["docker", "pull", image], check=True, timeout=600)
+    result = subprocess.run(
+        ["docker", "pull", image],
+        capture_output=True,
+        text=True,
+        timeout=600,
+    )
+    if result.returncode == 0:
+        return
+
+    log.warning(
+        "docker.pull.failed",
+        image=image,
+        stderr=result.stderr[-2000:],
+        stdout=result.stdout[-500:],
+    )
+
+    # Fallback: use locally cached image if available
+    check = subprocess.run(
+        ["docker", "image", "inspect", image],
+        capture_output=True,
+        timeout=10,
+    )
+    if check.returncode == 0:
+        log.info("docker.pull.local_fallback", image=image)
+        return
+
+    raise RuntimeError(
+        f"Cannot pull '{image}' and it is not available locally. "
+        f"Docker error: {result.stderr.strip()[-500:]}"
+    )
 
 
 # ---------- Запуск одного сканера ----------
