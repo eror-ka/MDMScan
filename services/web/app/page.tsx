@@ -31,7 +31,7 @@ export default async function HomePage() {
                   <th className="px-4 py-3 text-left">Образ</th>
                   <th className="px-4 py-3 text-left">Статус</th>
                   <th className="px-4 py-3 text-right">Находки</th>
-                  <th className="px-4 py-3 text-left">Запущен</th>
+                  <th className="px-4 py-3 text-left">Проверен</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
@@ -55,7 +55,12 @@ export default async function HomePage() {
                       {scan.findings_count}
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-xs">
-                      {new Date(scan.created_at).toLocaleString("ru-RU")}
+                      <div>{new Date(scan.created_at).toLocaleString("ru-RU")}</div>
+                      {scan.finished_at && (
+                        <div className="text-gray-600">
+                          — {new Date(scan.finished_at).toLocaleTimeString("ru-RU")}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

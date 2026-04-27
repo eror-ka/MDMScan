@@ -82,7 +82,9 @@ export default async function ScanPage({
             ? "Сканирование выполняется…"
             : `Результаты — ${findings.total} находок`}
         </h3>
-        <FindingsTable findings={findings.items} />
+        {!isRunning && (
+          <FindingsTable imageRef={scan.image_ref} findings={findings.items} />
+        )}
       </div>
     </div>
   );

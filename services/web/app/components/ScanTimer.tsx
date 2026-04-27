@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   startedAt: string;
@@ -9,25 +9,25 @@ interface Props {
 }
 
 export default function ScanTimer({ startedAt, finishedAt, status }: Props) {
-  const startMs = new Date(startedAt).getTime();
-  const endMs = finishedAt ? new Date(finishedAt).getTime() : null;
+  const isDone = status === "done" || status === "failed";
 
-  const [elapsed, setElapsed] = useState(() =>
-    endMs ? (endMs - startMs) / 1000 : (Date.now() - startMs) / 1000,
-  );
+  const actualDuration =
+    isDone && finishedAt
+      ? (new Date(finishedAt).getTime() - new Date(startedAt).getTime()) / 1000
+      : null;
+
+  const mountTimeRef = useRef(Date.now());
+  const [liveElapsed, setLiveElapsed] = useState(0);
 
   useEffect(() => {
-    if (endMs) {
-      setElapsed((endMs - startMs) / 1000);
-      return;
-    }
-    const id = setInterval(
-      () => setElapsed((Date.now() - startMs) / 1000),
-      100,
-    );
+    if (isDone) return;
+    const id = setInterval(() => {
+      setLiveElapsed((Date.now() - mountTimeRef.current) / 1000);
+    }, 100);
     return () => clearInterval(id);
-  }, [startMs, endMs]);
+  }, [isDone]);
 
+  const elapsed = actualDuration !== null ? actualDuration : liveElapsed;
   const running = status === "running" || status === "pending";
 
   return (
