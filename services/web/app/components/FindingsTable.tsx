@@ -37,14 +37,12 @@ function AnalyticsSummary({
 
   return (
     <div className="rounded-lg border border-gray-800 overflow-hidden">
-      <div className="bg-gray-900 px-4 py-3">
-        <span className="font-semibold text-gray-200 text-sm">
-          Краткая аналитика
-        </span>
+      <div className="bg-gray-900 px-4 py-3 text-center">
+        <span className="font-bold text-gray-100 text-lg">Краткая аналитика</span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-950 text-gray-500 text-xs uppercase tracking-wide border-t border-gray-800">
+          <thead className="bg-gray-950 text-gray-500 text-sm uppercase tracking-wide border-t border-gray-800">
             <tr>
               <th className="px-4 py-2 text-left">Цель</th>
               <th className="px-4 py-2 text-center">Тип</th>
@@ -57,10 +55,10 @@ function AnalyticsSummary({
           </thead>
           <tbody>
             <tr className="border-t border-gray-800">
-              <td className="px-4 py-3 font-mono text-gray-200 text-xs">
+              <td className="px-4 py-3 font-mono text-gray-200 text-sm">
                 {imageRef}
               </td>
-              <td className="px-4 py-3 text-center text-gray-500 text-xs">
+              <td className="px-4 py-3 text-center text-gray-500 text-sm">
                 Docker
               </td>
               {CAT_ORDER.map((cat) => {
@@ -68,7 +66,7 @@ function AnalyticsSummary({
                 return (
                   <td
                     key={cat}
-                    className={`px-4 py-3 text-center font-mono text-sm font-semibold ${
+                    className={`px-4 py-3 text-center font-mono text-base font-bold ${
                       n > 0 ? "text-red-400" : "text-green-400"
                     }`}
                   >

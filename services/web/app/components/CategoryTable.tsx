@@ -23,6 +23,10 @@ const CAT_LABEL: Record<string, string> = {
   hygiene: "Гигиена образа",
 };
 
+function deriveStatus(f: Finding): string {
+  return f.fix_version ? "Исправлена" : "Затронута";
+}
+
 function SeveritySummary({ findings }: { findings: Finding[] }) {
   const counts: Record<string, number> = {};
   for (const f of findings) {
@@ -32,7 +36,7 @@ function SeveritySummary({ findings }: { findings: Finding[] }) {
     (s) => `${SEV_LABELS[s] ?? s}: ${counts[s]}`,
   );
   return (
-    <span className="text-xs text-gray-500">
+    <span className="text-sm text-gray-500">
       Всего: {findings.length}
       {parts.length > 0 && ` (${parts.join(", ")})`}
     </span>
@@ -44,7 +48,7 @@ function EmptyRow({ colSpan }: { colSpan: number }) {
     <tr>
       <td
         colSpan={colSpan}
-        className="px-4 py-4 text-center text-gray-600 text-xs italic"
+        className="px-4 py-5 text-center text-gray-600 text-sm italic"
       >
         Ничего не обнаружено
       </td>
@@ -60,21 +64,23 @@ function VulnTableContent({
   open: boolean;
 }) {
   return (
-    <table className="w-full text-xs">
-      <thead className="bg-gray-950 text-gray-500 uppercase tracking-wide border-t border-gray-800">
+    <table className="w-full text-sm">
+      <thead className="bg-gray-950 text-gray-500 text-sm uppercase tracking-wide border-t border-gray-800">
         <tr>
           <th className="px-4 py-2 text-left">Библиотека</th>
           <th className="px-4 py-2 text-left">Уязвимость</th>
           <th className="px-4 py-2 text-left">Серьёзность</th>
-          <th className="px-4 py-2 text-left">Версия</th>
-          <th className="px-4 py-2 text-left">Исправление</th>
-          <th className="px-4 py-2 text-left">Описание</th>
+          <th className="px-4 py-2 text-left">Статус</th>
+          <th className="px-4 py-2 text-left">Установленная версия</th>
+          <th className="px-4 py-2 text-left">Исправленная версия</th>
+          <th className="px-4 py-2 text-left">Название</th>
+          <th className="px-4 py-2 text-left">Источник</th>
         </tr>
       </thead>
       {open && (
         <tbody className="divide-y divide-gray-800/60">
           {findings.length === 0 ? (
-            <EmptyRow colSpan={6} />
+            <EmptyRow colSpan={8} />
           ) : (
             findings.map((f) => (
               <tr key={f.id} className="hover:bg-gray-900/30">
@@ -87,19 +93,31 @@ function VulnTableContent({
                 <td className="px-4 py-2 whitespace-nowrap">
                   <SeverityBadge severity={f.severity} />
                 </td>
+                <td className="px-4 py-2 whitespace-nowrap">
+                  <span
+                    className={
+                      f.fix_version ? "text-green-400" : "text-orange-400"
+                    }
+                  >
+                    {deriveStatus(f)}
+                  </span>
+                </td>
                 <td className="px-4 py-2 font-mono text-gray-500 whitespace-nowrap">
                   {f.version ?? "—"}
                 </td>
                 <td className="px-4 py-2 font-mono text-green-400 whitespace-nowrap">
                   {f.fix_version ?? "—"}
                 </td>
-                <td className="px-4 py-2 text-gray-400 max-w-xs">
+                <td className="px-4 py-2 text-gray-300 max-w-sm">
                   <div className="line-clamp-2">{f.title}</div>
                   {f.description && f.description !== f.title && (
-                    <div className="text-gray-600 mt-0.5 line-clamp-1">
+                    <div className="text-gray-600 text-xs mt-0.5 line-clamp-1">
                       {f.description}
                     </div>
                   )}
+                </td>
+                <td className="px-4 py-2 text-gray-500 font-mono whitespace-nowrap">
+                  {f.sources.join(", ")}
                 </td>
               </tr>
             ))
@@ -120,8 +138,8 @@ function GenericTableContent({
   const hasLocation = findings.some((f) => f.location);
   const colSpan = 3 + (hasLocation ? 1 : 0);
   return (
-    <table className="w-full text-xs">
-      <thead className="bg-gray-950 text-gray-500 uppercase tracking-wide border-t border-gray-800">
+    <table className="w-full text-sm">
+      <thead className="bg-gray-950 text-gray-500 text-sm uppercase tracking-wide border-t border-gray-800">
         <tr>
           <th className="px-4 py-2 text-left">Серьёзность</th>
           <th className="px-4 py-2 text-left">Проверка / Описание</th>
@@ -144,7 +162,7 @@ function GenericTableContent({
                 <td className="px-4 py-2 text-gray-300">
                   <div>{f.title}</div>
                   {f.description && f.description !== f.title && (
-                    <div className="text-gray-600 line-clamp-2 mt-0.5">
+                    <div className="text-gray-600 text-sm line-clamp-2 mt-0.5">
                       {f.description}
                     </div>
                   )}
@@ -181,18 +199,18 @@ export default function CategoryTable({ category, findings, maxSeverity }: Props
   return (
     <div className="rounded-lg border border-gray-800 overflow-hidden">
       <div className="bg-gray-900 px-4 py-3 flex items-center gap-3">
-        <button
-          onClick={() => setOpen(!open)}
-          className="text-gray-400 hover:text-gray-200 transition-colors text-xs select-none"
-          title={open ? "Свернуть" : "Развернуть"}
-        >
-          {open ? "▼" : "▶"}
-        </button>
         <SeverityBadge severity={badgeSeverity} />
-        <span className="font-semibold text-gray-200">{label}</span>
-        <div className="ml-auto">
-          <SeveritySummary findings={findings} />
+        <div className="flex-1 flex items-center justify-center gap-3">
+          <span className="font-bold text-gray-100 text-lg">{label}</span>
+          <button
+            onClick={() => setOpen(!open)}
+            className="text-gray-300 hover:text-white transition-colors text-lg select-none"
+            title={open ? "Свернуть" : "Развернуть"}
+          >
+            {open ? "▼" : "▶"}
+          </button>
         </div>
+        <SeveritySummary findings={findings} />
       </div>
       <div className="overflow-x-auto">
         {isVuln ? (
