@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from app.routers import scans
+from app.routers import auth, scans
 
 app = FastAPI(
     title="MDMScan API",
@@ -11,6 +11,7 @@ app = FastAPI(
 )
 
 app.include_router(scans.router)
+app.include_router(auth.router)
 
 
 @app.get("/health", tags=["health"])

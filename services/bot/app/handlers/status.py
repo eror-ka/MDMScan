@@ -6,7 +6,8 @@ from aiogram.filters.command import CommandObject
 from aiogram.types import Message
 
 from app.api_client import get_scan
-from app.utils import format_scan_status
+from app.keyboards import scan_detail_keyboard
+from app.utils import format_scan_detail
 
 router = Router()
 
@@ -34,4 +35,8 @@ async def cmd_status(message: Message, command: CommandObject) -> None:
         )
         return
 
-    await message.answer(format_scan_status(scan), parse_mode="MarkdownV2")
+    await message.answer(
+        format_scan_detail(scan),
+        parse_mode="MarkdownV2",
+        reply_markup=scan_detail_keyboard(scan_id),
+    )

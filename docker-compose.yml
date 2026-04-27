@@ -91,6 +91,7 @@ services:
     environment:
       POSTGRES_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
       REDIS_URL: redis://redis:6379/0
+      MINIAPP_BOT_TOKEN: ${BOT_MINIAPP_TOKEN}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
