@@ -28,7 +28,7 @@ def configure_logging(json_logs: bool = True) -> None:
         processors=shared_processors + [renderer],
         wrapper_class=structlog.stdlib.BoundLogger,
         context_class=dict,
-        logger_factory=structlog.PrintLoggerFactory(),
+        logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
 

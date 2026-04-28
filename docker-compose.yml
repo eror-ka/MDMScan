@@ -194,11 +194,11 @@ services:
     image: mdmscan-worker:latest
     container_name: mdmscan-beat
     restart: unless-stopped
-    command: >
-      sh -c "rm -f /tmp/prometheus-metrics/*.db 2>/dev/null || true
-             && celery -A app.tasks beat
-                --loglevel=$${CELERY_LOGLEVEL:-INFO}
-                --schedule=/tmp/celerybeat-schedule"
+    command: >-
+      sh -c "rm -f /tmp/prometheus-metrics/*.db 2>/dev/null || true &&
+      celery -A app.tasks beat
+      --loglevel=$${CELERY_LOGLEVEL:-INFO}
+      --schedule=/tmp/celerybeat-schedule"
     environment:
       REDIS_URL: redis://redis:6379/0
       S3_ENDPOINT: http://minio:9000

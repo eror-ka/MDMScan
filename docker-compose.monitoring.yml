@@ -20,7 +20,7 @@ services:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     ports:
-      - "127.0.0.1:9091:9090"
+      - "9091:9090"
     networks:
       - mdmscan-net
 
@@ -58,7 +58,7 @@ services:
       - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
       - grafana_data:/var/lib/grafana
     ports:
-      - "127.0.0.1:3001:3000"
+      - "3001:3000"
     depends_on:
       - prometheus
       - loki
