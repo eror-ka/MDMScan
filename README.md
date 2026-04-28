@@ -29,7 +29,7 @@ docker compose up -d
 | REST API / Swagger | http://localhost:8000/docs |
 | MinIO Console | http://localhost:9001 |
 
-> Пароли: `openssl rand -base64 24`.  
+> Пароли: `openssl rand -base64 24`.
 > Токены Telegram-ботов: [@BotFather](https://t.me/BotFather).
 
 ---

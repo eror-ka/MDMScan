@@ -1,7 +1,9 @@
 # REST API
 
-Базовый URL: `http://localhost:8000`  
-Интерактивная документация (Swagger UI): `http://localhost:8000/docs`  
+Базовый URL: `http://localhost:8000`
+
+Интерактивная документация (Swagger UI): `http://localhost:8000/docs`
+
 OpenAPI-схема (JSON): `http://localhost:8000/openapi.json`
 
 ---
@@ -111,7 +113,7 @@ Liveness-проба.
 Удалить скан из базы данных (каскадно: findings + artifacts). Файлы в MinIO
 **не удаляются** (очищаются lifecycle policy или задачей `cleanup_old_scans`).
 
-**Ответ `204`** — удалён.  
+**Ответ `204`** — удалён.
 **Ответ `404`** — не найден.
 
 ---
