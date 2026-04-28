@@ -51,7 +51,7 @@ celery_app.conf.update(
 celery_app.conf.beat_schedule = {
     "cleanup-orphan-temp": {
         "task": "mdmscan.cleanup_orphan_temp",
-        "schedule": crontab(minute=0),       # каждый час в :00
+        "schedule": crontab(minute=0),  # каждый час в :00
     },
     "cleanup-old-scans": {
         "task": "mdmscan.cleanup_old_scans",
@@ -59,17 +59,19 @@ celery_app.conf.beat_schedule = {
     },
     "prune-docker-images": {
         "task": "mdmscan.prune_docker_images",
-        "schedule": crontab(minute=30),      # каждый час в :30
+        "schedule": crontab(minute=30),  # каждый час в :30
     },
 }
 
 # ── Prometheus: beat-процесс запускает HTTP-сервер метрик ─────────────────────
+
 
 @beat_init.connect
 def on_beat_init(sender, **kwargs):
     if os.getenv("METRICS_SERVER", "false").lower() == "true":
         os.makedirs(settings.prometheus_multiproc_dir, exist_ok=True)
         from app.metrics import start_metrics_server
+
         start_metrics_server()
         log.info("metrics.server.started", port=settings.metrics_port)
 
@@ -259,7 +261,12 @@ def scan_image(self, image_ref: str, scan_id: str | None = None) -> dict:
         elapsed = time.monotonic() - t0
         scans_total.labels(status="done").inc()
         scan_duration_seconds.labels(status="done").observe(elapsed)
-        log.info("scan.done", scan_id=scan_id, findings=len(deduped), duration_s=round(elapsed, 2))
+        log.info(
+            "scan.done",
+            scan_id=scan_id,
+            findings=len(deduped),
+            duration_s=round(elapsed, 2),
+        )
         return manifest
 
     except Exception as exc:
@@ -393,7 +400,9 @@ def prune_docker_images() -> dict:
             timeout=120,
         )
         status = "ok" if result.returncode == 0 else "error"
-        reclaimed = result.stdout.strip().splitlines()[-1] if result.stdout.strip() else ""
+        reclaimed = (
+            result.stdout.strip().splitlines()[-1] if result.stdout.strip() else ""
+        )
         log.info("prune.docker.done", status=status, reclaimed=reclaimed)
     except subprocess.TimeoutExpired:
         status = "timeout"
