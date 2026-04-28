@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build → Self-scan (dogfooding) → GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Окружение ────────────────────────────────────────────────────────────
+      - name: Prepare .env
+        run: |
+          cp .env.example .env
+          # Заменяем CHANGE_ME на временные тестовые значения
+          sed -i 's/CHANGE_ME/ci-test-secret-000/g' .env
+          sed -i 's/YOUR_SERVER_IP/localhost/g'      .env
+
+      # ── Сборка образов ───────────────────────────────────────────────────────
+      - name: Build Docker images
+        run: docker compose build worker api
+
+      # ── Запуск инфраструктуры ────────────────────────────────────────────────
+      - name: Start infrastructure
+        run: |
+          docker compose up -d postgres redis minio minio-init
+          echo "Waiting for postgres..."
+          timeout 90 bash -c \
+            'until docker compose exec -T postgres pg_isready -U mdmscan; do sleep 3; done'
+
+      - name: Start worker and API
+        run: |
+          docker compose up -d worker api
+          echo "Waiting for API health..."
+          timeout 90 bash -c \
+            'until curl -sf http://localhost:8000/health; do sleep 3; done'
+
+      # ── Self-scan (dogfooding) ───────────────────────────────────────────────
+      # Сканируем собственные только что собранные образы нашим же инструментом.
+      - name: Run self-scan
+        id: selfscan
+        run: |
+          mkdir -p reports
+
+          scan_image() {
+            local IMAGE="$1"
+            local LABEL="$2"
+            echo "=== Scanning $IMAGE ==="
+
+            SCAN_ID=$(curl -sf -X POST http://localhost:8000/scans \
+              -H "Content-Type: application/json" \
+              -d "{\"image\": \"${IMAGE}\"}" | jq -r '.scan_id')
+            echo "scan_id=$SCAN_ID"
+
+            # Ждём завершения (максимум 10 минут)
+            timeout 600 bash -c "
+              while true; do
+                STATUS=\$(curl -sf http://localhost:8000/scans/${SCAN_ID} | jq -r '.status')
+                echo \"  status: \$STATUS\"
+                [ \"\$STATUS\" = 'done' ] || [ \"\$STATUS\" = 'failed' ] && break
+                sleep 15
+              done
+            "
+
+            curl -sf "http://localhost:8000/scans/${SCAN_ID}"         > "reports/${LABEL}-summary.json"
+            curl -sf "http://localhost:8000/scans/${SCAN_ID}/findings?limit=500" > "reports/${LABEL}-findings.json"
+            echo "  saved reports/${LABEL}-summary.json + reports/${LABEL}-findings.json"
+          }
+
+          scan_image "mdmscan-worker:latest" "worker"
+          scan_image "mdmscan-api:latest"    "api"
+
+      - name: Show scan summaries
+        run: |
+          for f in reports/*-summary.json; do
+            echo "=== $f ==="
+            cat "$f" | jq '{image: .image_ref, status, findings: .findings_count, score: .security_score}'
+          done
+
+      # ── Changelog ────────────────────────────────────────────────────────────
+      - name: Generate changelog
+        run: |
+          PREV_TAG=$(git tag --sort=-version:refname | sed -n '2p')
+          if [ -n "$PREV_TAG" ]; then
+            git log --oneline "${PREV_TAG}..HEAD" > CHANGELOG_RELEASE.md
+          else
+            git log --oneline > CHANGELOG_RELEASE.md
+          fi
+
+      # ── GitHub Release ───────────────────────────────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: CHANGELOG_RELEASE.md
+          generate_release_notes: true
+          files: |
+            reports/worker-summary.json
+            reports/worker-findings.json
+            reports/api-summary.json
+            reports/api-findings.json
