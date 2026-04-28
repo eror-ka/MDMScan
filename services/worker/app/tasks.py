@@ -134,15 +134,7 @@ def _compute_security_score(findings: list[parser_base.Finding]) -> int:
     if h_badness > 0:
         total_penalty += min(5.0, h_badness / 10.0 * 5.0)
 
-    # Minimum 1-point penalty for any findings (accounts for LOW/UNKNOWN)
-    if findings and total_penalty < 1.0:
-        total_penalty = 1.0
-
     score = max(0, round(100 - total_penalty))
-
-    # Floor at 75 when no CRITICAL vulnerabilities
-    if not any(f.severity == "CRITICAL" and f.category == "vuln" for f in findings):
-        score = max(75, score)
 
     return score
 

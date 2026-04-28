@@ -58,7 +58,7 @@ function AnalyticsSummary({
                   <td
                     key={cat}
                     className={`px-4 py-3 text-center font-mono text-base font-bold ${
-                      n > 0 ? "text-red-400" : "text-gray-500"
+                      n > 0 ? "text-red-400" : "text-green-400"
                     }`}
                   >
                     {n}
