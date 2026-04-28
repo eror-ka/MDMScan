@@ -39,6 +39,8 @@ class ScannerSpec:
     # некоторые сканеры пишут в stdout, некоторые сразу в файл
     capture_stdout_to_file: bool = False
     extra_env: dict[str, str] = field(default_factory=dict)
+    # для stdout-сканеров: пустой вывод = нет находок, не ошибка
+    accept_empty_output: bool = False
 
 
 # ---------- Команды конкретных сканеров ----------
@@ -83,8 +85,8 @@ def _dockle(image: str, workdir: Path) -> tuple[list[str], str]:
 
 
 def _osv(image: str, workdir: Path) -> tuple[list[str], str]:
-    # OSV-Scanner v2: команда переехала на `scan image <ref>`,
-    # старый флаг --docker удалён. Использует docker save под капотом.
+    # OSV-Scanner v2: пишет в stdout; exit 1 = найдены уязвимости (не ошибка).
+    # --output не используем: захватываем stdout через capture_stdout_to_file.
     out = "osv.json"
     cmd = [
         "osv-scanner",
@@ -92,8 +94,6 @@ def _osv(image: str, workdir: Path) -> tuple[list[str], str]:
         "image",
         "--format",
         "json",
-        "--output",
-        str(workdir / out),
         image,
     ]
     return cmd, out
@@ -130,9 +130,9 @@ SCANNERS: list[ScannerSpec] = [
     ScannerSpec("trivy", _trivy),
     ScannerSpec("syft", _syft),
     ScannerSpec("dockle", _dockle),
-    ScannerSpec("osv-scanner", _osv),
+    ScannerSpec("osv-scanner", _osv, capture_stdout_to_file=True, accept_empty_output=True),
     ScannerSpec("dive", _dive),
-    ScannerSpec("trufflehog", _trufflehog, capture_stdout_to_file=True),
+    ScannerSpec("trufflehog", _trufflehog, capture_stdout_to_file=True, accept_empty_output=True),
     ScannerSpec("cosign", _cosign, capture_stdout_to_file=True),
 ]
 
@@ -220,12 +220,15 @@ def run_one(spec: ScannerSpec, image: str, workdir: Path) -> ScannerResult:
         out_path.write_text(proc.stdout or "")
 
     # Логика статуса:
-    # - exit_code == 0 → сканер успешно отработал, даже если ничего не нашёл (пустой файл — норма)
-    # - exit_code != 0, но файл создан и непустой → typical "найдены findings" (Trivy/Grype с CVE)
-    # - exit_code != 0 и нет файла/он пустой → реальная ошибка
+    # - exit_code == 0 → успешно, даже если файл пустой (нет находок — норма)
+    # - exit_code != 0, файл непустой → сканер нашёл findings и вышел с ненулевым кодом (osv-scanner exit 1)
+    # - accept_empty_output и пустой stdout → нет находок, не ошибка (trufflehog, osv)
+    # - иначе → реальная ошибка
     if proc.returncode == 0:
         status = "ok"
     elif out_path.exists() and out_path.stat().st_size > 0:
+        status = "ok"
+    elif spec.accept_empty_output:
         status = "ok"
     else:
         status = "error"

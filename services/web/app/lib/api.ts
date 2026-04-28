@@ -71,3 +71,26 @@ export async function getFindings(scanId: string): Promise<FindingsResponse> {
     return { scan_id: scanId, total: 0, items: [] };
   }
 }
+
+const CAT_LIST = ["vuln", "secret", "misconfig", "supply_chain", "hygiene"] as const;
+
+export async function getCategoryCounts(
+  scanId: string,
+): Promise<Record<string, number>> {
+  const pairs = await Promise.all(
+    CAT_LIST.map(async (cat) => {
+      try {
+        const res = await fetch(
+          `${API_URL}/scans/${scanId}/findings?category=${cat}&limit=1`,
+          { cache: "no-store" },
+        );
+        if (!res.ok) return [cat, 0] as const;
+        const data: FindingsResponse = await res.json();
+        return [cat, data.total] as const;
+      } catch {
+        return [cat, 0] as const;
+      }
+    }),
+  );
+  return Object.fromEntries(pairs);
+}

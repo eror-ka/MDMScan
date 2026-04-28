@@ -9,22 +9,14 @@ const CAT_LABEL: Record<string, string> = {
   supply_chain: "Цепочка поставок",
   hygiene: "Гигиена образа",
 };
-function countByCategory(findings: Finding[]) {
-  const counts: Record<string, number> = {};
-  for (const f of findings) {
-    counts[f.category] = (counts[f.category] ?? 0) + 1;
-  }
-  return counts;
-}
 
 function AnalyticsSummary({
   imageRef,
-  findings,
+  counts,
 }: {
   imageRef: string;
-  findings: Finding[];
+  counts: Record<string, number>;
 }) {
-  const counts = countByCategory(findings);
 
   return (
     <div className="rounded-lg border border-gray-800 overflow-hidden">
@@ -76,9 +68,10 @@ function AnalyticsSummary({
 interface Props {
   imageRef: string;
   findings: Finding[];
+  categoryCounts: Record<string, number>;
 }
 
-export default function FindingsTable({ imageRef, findings }: Props) {
+export default function FindingsTable({ imageRef, findings, categoryCounts }: Props) {
   const map = new Map<string, Finding[]>();
   for (const f of findings) {
     const arr = map.get(f.category) ?? [];
@@ -98,7 +91,7 @@ export default function FindingsTable({ imageRef, findings }: Props) {
         </span>
       </div>
 
-      <AnalyticsSummary imageRef={imageRef} findings={findings} />
+      <AnalyticsSummary imageRef={imageRef} counts={categoryCounts} />
 
       {CAT_ORDER.map((cat) => {
         const items = map.get(cat) ?? [];

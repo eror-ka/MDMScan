@@ -4,7 +4,7 @@ import AutoRefresh from "../../components/AutoRefresh";
 import FindingsTable from "../../components/FindingsTable";
 import ScanTimer from "../../components/ScanTimer";
 import StatusBadge from "../../components/StatusBadge";
-import { getFindings, getScan } from "../../lib/api";
+import { getCategoryCounts, getFindings, getScan } from "../../lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +13,10 @@ export default async function ScanPage({
 }: {
   params: { id: string };
 }) {
-  const [scan, findings] = await Promise.all([
+  const [scan, findings, categoryCounts] = await Promise.all([
     getScan(params.id),
     getFindings(params.id),
+    getCategoryCounts(params.id),
   ]);
 
   if (!scan) notFound();
@@ -83,7 +84,11 @@ export default async function ScanPage({
             : `Результаты — ${findings.total} находок`}
         </h3>
         {!isRunning && (
-          <FindingsTable imageRef={scan.image_ref} findings={findings.items} />
+          <FindingsTable
+            imageRef={scan.image_ref}
+            findings={findings.items}
+            categoryCounts={categoryCounts}
+          />
         )}
       </div>
     </div>
