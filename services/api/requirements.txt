@@ -5,3 +5,4 @@ psycopg2-binary==2.9.10
 celery==5.4.0
 redis==5.2.1
 pydantic-settings==2.6.1
+prometheus-fastapi-instrumentator==7.0.0

@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # HTTP-метрики FastAPI (запросы, latency, статус-коды)
+  - job_name: mdmscan-api
+    static_configs:
+      - targets: ["api:8000"]
+    metrics_path: /metrics
+
+  # Celery-метрики воркера (сканы, findings, тайминги сканеров)
+  # Сервируются beat-процессом через MultiProcessCollector
+  - job_name: mdmscan-worker
+    static_configs:
+      - targets: ["beat:9090"]

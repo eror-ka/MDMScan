@@ -51,16 +51,30 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      SCAN_RETENTION_DAYS: ${SCAN_RETENTION_DAYS:-5}
     entrypoint:
       - /bin/sh
       - -c
       - |
         set -e
         mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+
         for b in raw-scans reports sboms temp; do
           mc mb --ignore-existing "local/$$b"
         done
         echo "MinIO buckets ready: raw-scans, reports, sboms, temp"
+
+        # Lifecycle policy: raw-scans удаляются после SCAN_RETENTION_DAYS дней
+        mc ilm rule add --expire-days "$$SCAN_RETENTION_DAYS" local/raw-scans 2>/dev/null \
+          || mc ilm add --expiry-days "$$SCAN_RETENTION_DAYS" local/raw-scans 2>/dev/null \
+          || echo "ILM raw-scans: skipped (rule may already exist)"
+
+        # Lifecycle policy: temp удаляется через 1 день
+        mc ilm rule add --expire-days 1 local/temp 2>/dev/null \
+          || mc ilm add --expiry-days 1 local/temp 2>/dev/null \
+          || echo "ILM temp: skipped (rule may already exist)"
+
+        echo "MinIO lifecycle policies applied"
     networks:
       - mdmscan-net
     restart: "no"
@@ -157,9 +171,11 @@ services:
       S3_BUCKET_RAW: raw-scans
       SCAN_WORKDIR: /tmp/scans
       SCAN_TIMEOUT_SECONDS: ${SCAN_TIMEOUT_SECONDS:-1800}
+      SCAN_RETENTION_DAYS: ${SCAN_RETENTION_DAYS:-5}
       POSTGRES_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
       CELERY_LOGLEVEL: INFO
       CELERY_CONCURRENCY: 2
+      PROMETHEUS_MULTIPROC_DIR: /tmp/prometheus-metrics
     depends_on:
       postgres:
         condition: service_healthy
@@ -170,6 +186,44 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:z
       - scan_tmp:/tmp/scans
+      - prometheus_metrics:/tmp/prometheus-metrics
+    networks:
+      - mdmscan-net
+
+  beat:
+    image: mdmscan-worker:latest
+    container_name: mdmscan-beat
+    restart: unless-stopped
+    command: >
+      sh -c "rm -f /tmp/prometheus-metrics/*.db 2>/dev/null || true
+             && celery -A app.tasks beat
+                --loglevel=$${CELERY_LOGLEVEL:-INFO}
+                --schedule=/tmp/celerybeat-schedule"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      S3_BUCKET_RAW: raw-scans
+      SCAN_WORKDIR: /tmp/scans
+      SCAN_TIMEOUT_SECONDS: ${SCAN_TIMEOUT_SECONDS:-1800}
+      SCAN_RETENTION_DAYS: ${SCAN_RETENTION_DAYS:-5}
+      POSTGRES_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+      CELERY_LOGLEVEL: INFO
+      PROMETHEUS_MULTIPROC_DIR: /tmp/prometheus-metrics
+      METRICS_SERVER: "true"
+      METRICS_PORT: "9090"
+    ports:
+      - "127.0.0.1:9090:9090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:z
+      - scan_tmp:/tmp/scans
+      - prometheus_metrics:/tmp/prometheus-metrics
     networks:
       - mdmscan-net
 
@@ -178,6 +232,7 @@ volumes:
   minio_data:
   redis_data:
   scan_tmp:
+  prometheus_metrics:
 
 networks:
   mdmscan-net:

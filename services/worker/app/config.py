@@ -27,5 +27,14 @@ class Settings:
     scan_timeout_seconds: int = int(os.getenv("SCAN_TIMEOUT_SECONDS", "600"))
     scan_workdir: str = os.getenv("SCAN_WORKDIR", "/tmp/scans")
 
+    # Очистка
+    scan_retention_days: int = int(os.getenv("SCAN_RETENTION_DAYS", "5"))
+
+    # Метрики Prometheus
+    metrics_port: int = int(os.getenv("METRICS_PORT", "9090"))
+    prometheus_multiproc_dir: str = os.getenv(
+        "PROMETHEUS_MULTIPROC_DIR", "/tmp/prometheus-metrics"
+    )
+
 
 settings = Settings()
