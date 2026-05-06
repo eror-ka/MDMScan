@@ -43,7 +43,7 @@ function VulnTableContent({
           <th className="px-4 py-2 text-left">Серьёзность</th>
           <th className="px-4 py-2 text-left">Установленная версия</th>
           <th className="px-4 py-2 text-left">Исправленная версия</th>
-          <th className="px-4 py-2 text-left">Название</th>
+          <th className="px-4 py-2 text-left text-[14px]">Название</th>
           <th className="px-4 py-2 text-left">Источник</th>
         </tr>
       </thead>
@@ -73,10 +73,10 @@ function VulnTableContent({
                     <span className="text-gray-500">—</span>
                   )}
                 </td>
-                <td className="px-4 py-2 text-gray-300 max-w-xs">
+                <td className="px-4 py-2 text-gray-300 max-w-xs text-[14px]">
                   <div className="line-clamp-2">{f.title}</div>
                   {f.description && f.description !== f.title && (
-                    <div className="text-gray-600 text-xs mt-0.5 line-clamp-1">
+                    <div className="text-gray-600 text-[12px] mt-0.5 line-clamp-1">
                       {f.description}
                     </div>
                   )}
