@@ -119,8 +119,8 @@ def _compute_security_score(findings: list[parser_base.Finding]) -> int:
     elif any(f.severity == "HIGH" for f in misconfig):
         total_penalty += 2.5
 
-    # Secrets: each finding = -1 point (no cap)
-    total_penalty += len(cats.get("secret", []))
+    # Secrets (max -10): each finding = -1 point
+    total_penalty += min(10, len(cats.get("secret", [])))
 
     # Hygiene / image efficiency (max -10): tiered by dive efficiency score
     # CRITICAL severity = efficiency < 50%, HIGH = efficiency < 75%
