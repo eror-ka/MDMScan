@@ -88,6 +88,7 @@ export default async function ScanPage({
             imageRef={scan.image_ref}
             findings={findings.items}
             categoryCounts={categoryCounts}
+            securityScore={scan.security_score ?? null}
           />
         )}
       </div>

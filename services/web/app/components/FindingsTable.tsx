@@ -10,12 +10,21 @@ const CAT_LABEL: Record<string, string> = {
   hygiene: "Гигиена образа",
 };
 
+function scoreColor(score: number): string {
+  if (score >= 80) return "text-green-400";
+  if (score >= 60) return "text-yellow-400";
+  if (score >= 40) return "text-orange-400";
+  return "text-red-400";
+}
+
 function AnalyticsSummary({
   imageRef,
   counts,
+  securityScore,
 }: {
   imageRef: string;
   counts: Record<string, number>;
+  securityScore: number | null;
 }) {
 
   return (
@@ -28,7 +37,7 @@ function AnalyticsSummary({
           <thead className="bg-gray-950 text-gray-300 text-sm uppercase tracking-wide border-t border-gray-800">
             <tr>
               <th className="px-4 py-2 text-left">Цель</th>
-              <th className="px-4 py-2 text-center">Тип</th>
+              <th className="px-4 py-2 text-center">Безопасность (0–100)</th>
               {CAT_ORDER.map((cat) => (
                 <th key={cat} className="px-4 py-2 text-center">
                   {CAT_LABEL[cat]}
@@ -41,8 +50,12 @@ function AnalyticsSummary({
               <td className="px-4 py-3 font-mono text-gray-200 text-sm">
                 {imageRef}
               </td>
-              <td className="px-4 py-3 text-center text-gray-500 text-sm">
-                Docker
+              <td className="px-4 py-3 text-center font-mono font-bold text-lg">
+                {securityScore !== null ? (
+                  <span className={scoreColor(securityScore)}>{securityScore}</span>
+                ) : (
+                  <span className="text-gray-600 text-sm font-normal">—</span>
+                )}
               </td>
               {CAT_ORDER.map((cat) => {
                 const n = counts[cat] ?? 0;
@@ -69,9 +82,10 @@ interface Props {
   imageRef: string;
   findings: Finding[];
   categoryCounts: Record<string, number>;
+  securityScore: number | null;
 }
 
-export default function FindingsTable({ imageRef, findings, categoryCounts }: Props) {
+export default function FindingsTable({ imageRef, findings, categoryCounts, securityScore }: Props) {
   const map = new Map<string, Finding[]>();
   for (const f of findings) {
     const arr = map.get(f.category) ?? [];
@@ -91,7 +105,7 @@ export default function FindingsTable({ imageRef, findings, categoryCounts }: Pr
         </span>
       </div>
 
-      <AnalyticsSummary imageRef={imageRef} counts={categoryCounts} />
+      <AnalyticsSummary imageRef={imageRef} counts={categoryCounts} securityScore={securityScore} />
 
       {CAT_ORDER.map((cat) => {
         const items = map.get(cat) ?? [];
