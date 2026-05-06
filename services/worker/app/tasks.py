@@ -88,8 +88,6 @@ from app.metrics import (  # noqa: E402
 
 # ── Security score ────────────────────────────────────────────────────────────
 
-_SEVERITY_WEIGHT = {"CRITICAL": 5.0, "HIGH": 1.0, "MEDIUM": 0.1}
-
 
 def _compute_security_score(findings: list[parser_base.Finding]) -> int:
     cats: dict[str, list[parser_base.Finding]] = {}
@@ -98,45 +96,41 @@ def _compute_security_score(findings: list[parser_base.Finding]) -> int:
 
     total_penalty = 0.0
 
-    # Vulnerabilities (max -65): tiered, non-additive — worst tier applies
+    # Vulnerabilities (max -75): tiered, worst tier only
     vuln = cats.get("vuln", [])
     n_crit = sum(1 for f in vuln if f.severity == "CRITICAL")
     n_high = sum(1 for f in vuln if f.severity == "HIGH")
-    if n_crit > 1:
-        total_penalty += 65
+    if n_crit >= 2:
+        total_penalty += 75
     elif n_crit == 1:
         total_penalty += 50
     elif n_high >= 5:
-        total_penalty += 10
+        total_penalty += 15
     elif n_high >= 1:
+        total_penalty += 10
+
+    # Misconfigurations (max -15): tiered, worst tier only
+    misconfig = cats.get("misconfig", [])
+    mc_crit = sum(1 for f in misconfig if f.severity == "CRITICAL")
+    if mc_crit >= 2:
+        total_penalty += 15
+    elif mc_crit == 1:
+        total_penalty += 10
+    elif any(f.severity == "HIGH" for f in misconfig):
+        total_penalty += 2.5
+
+    # Secrets: each finding = -1 point (no cap)
+    total_penalty += len(cats.get("secret", []))
+
+    # Hygiene / image efficiency (max -10): tiered by dive efficiency score
+    # CRITICAL severity = efficiency < 50%, HIGH = efficiency < 75%
+    hygiene = cats.get("hygiene", [])
+    if any(f.severity == "CRITICAL" for f in hygiene):
+        total_penalty += 10
+    elif any(f.severity == "HIGH" for f in hygiene):
         total_penalty += 5
 
-    # Misconfigurations (max -20): additive by severity presence
-    misconfig = cats.get("misconfig", [])
-    mc_penalty = 0.0
-    if any(f.severity == "CRITICAL" for f in misconfig):
-        mc_penalty += 12.5
-    if any(f.severity == "HIGH" for f in misconfig):
-        mc_penalty += 5.0
-    if any(f.severity == "MEDIUM" for f in misconfig):
-        mc_penalty += 2.5
-    total_penalty += min(20.0, mc_penalty)
-
-    # Secrets (max -10): badness-based, threshold = 5 HIGH-equiv
-    secret = cats.get("secret", [])
-    s_badness = sum(_SEVERITY_WEIGHT.get(f.severity, 0.0) for f in secret)
-    if s_badness > 0:
-        total_penalty += min(10.0, s_badness / 5.0 * 10.0)
-
-    # Hygiene / image efficiency (max -5): badness-based, threshold = 10 HIGH-equiv
-    hygiene = cats.get("hygiene", [])
-    h_badness = sum(_SEVERITY_WEIGHT.get(f.severity, 0.0) for f in hygiene)
-    if h_badness > 0:
-        total_penalty += min(5.0, h_badness / 10.0 * 5.0)
-
-    score = max(0, round(100 - total_penalty))
-
-    return score
+    return max(0, round(100 - total_penalty))
 
 
 _PARSERS: dict[str, tuple] = {

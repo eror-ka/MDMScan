@@ -17,14 +17,16 @@ def parse(path: Path) -> list[Finding]:
     total_bytes = image.get("sizeBytes", 0)
     wasted_bytes = image.get("inefficientBytes", 0)
 
-    if efficiency >= 0.95:
-        sev = "INFO"
-    elif efficiency >= 0.85:
-        sev = "LOW"
-    elif efficiency >= 0.70:
-        sev = "MEDIUM"
-    else:
+    if efficiency < 0.50:
+        sev = "CRITICAL"
+    elif efficiency < 0.75:
         sev = "HIGH"
+    elif efficiency < 0.85:
+        sev = "MEDIUM"
+    elif efficiency < 0.95:
+        sev = "LOW"
+    else:
+        sev = "INFO"
 
     wasted_mb = round(wasted_bytes / 1024 / 1024, 1)
     total_mb = round(total_bytes / 1024 / 1024, 1)
