@@ -73,10 +73,10 @@ function VulnTableContent({
                     <span className="text-gray-500">—</span>
                   )}
                 </td>
-                <td className="px-4 py-2 text-gray-300">
-                  <div>{f.title}</div>
+                <td className="px-4 py-2 text-gray-300 max-w-xs">
+                  <div className="line-clamp-2">{f.title}</div>
                   {f.description && f.description !== f.title && (
-                    <div className="text-gray-600 text-xs mt-0.5">
+                    <div className="text-gray-600 text-xs mt-0.5 line-clamp-1">
                       {f.description}
                     </div>
                   )}
@@ -124,10 +124,10 @@ function GenericTableContent({
                 <td className="px-4 py-2 whitespace-nowrap">
                   <SeverityBadge severity={f.severity} />
                 </td>
-                <td className="px-4 py-2 text-gray-300">
-                  <div>{f.title}</div>
+                <td className="px-4 py-2 text-gray-300 max-w-xs">
+                  <div className="line-clamp-2">{f.title}</div>
                   {f.description && f.description !== f.title && (
-                    <div className="text-gray-600 text-sm line-clamp-2 mt-0.5">
+                    <div className="text-gray-600 text-sm line-clamp-1 mt-0.5">
                       {f.description}
                     </div>
                   )}
