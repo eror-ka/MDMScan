@@ -130,9 +130,13 @@ SCANNERS: list[ScannerSpec] = [
     ScannerSpec("trivy", _trivy),
     ScannerSpec("syft", _syft),
     ScannerSpec("dockle", _dockle),
-    ScannerSpec("osv-scanner", _osv, capture_stdout_to_file=True, accept_empty_output=True),
+    ScannerSpec(
+        "osv-scanner", _osv, capture_stdout_to_file=True, accept_empty_output=True
+    ),
     ScannerSpec("dive", _dive),
-    ScannerSpec("trufflehog", _trufflehog, capture_stdout_to_file=True, accept_empty_output=True),
+    ScannerSpec(
+        "trufflehog", _trufflehog, capture_stdout_to_file=True, accept_empty_output=True
+    ),
     ScannerSpec("cosign", _cosign, capture_stdout_to_file=True),
 ]
 
