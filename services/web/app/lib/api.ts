@@ -62,7 +62,7 @@ export async function getScan(scanId: string): Promise<ScanJob | null> {
 
 export async function getFindings(scanId: string): Promise<FindingsResponse> {
   try {
-    const res = await fetch(`${API_URL}/scans/${scanId}/findings?limit=500`, {
+    const res = await fetch(`${API_URL}/scans/${scanId}/findings?limit=10000`, {
       cache: "no-store",
     });
     if (!res.ok) return { scan_id: scanId, total: 0, items: [] };

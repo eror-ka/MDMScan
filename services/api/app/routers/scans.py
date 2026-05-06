@@ -106,7 +106,7 @@ def get_findings(
     db: DbDep,
     severity: Annotated[str | None, Query()] = None,
     category: Annotated[str | None, Query()] = None,
-    limit: Annotated[int, Query(ge=1, le=500)] = 100,
+    limit: Annotated[int, Query(ge=1, le=10000)] = 100,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> FindingsListOut:
     if db.get(ScanJob, scan_id) is None:
