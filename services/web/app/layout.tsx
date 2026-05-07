@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
 import TelegramWebApp from "./components/TelegramWebApp";
@@ -6,6 +6,13 @@ import TelegramWebApp from "./components/TelegramWebApp";
 export const metadata: Metadata = {
   title: "MDMScan",
   description: "Оценка безопасности Docker-образов",
+};
+
+export const viewport: Viewport = {
+  width: "1280",
+  userScalable: true,
+  minimumScale: 0.1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
