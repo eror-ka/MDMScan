@@ -31,7 +31,7 @@ export default function RootLayout({
           </a>
           <TelegramWebApp />
         </header>
-        <main className="w-full px-24 py-8">{children}</main>
+        <main className="w-full px-4 py-4 md:px-24 md:py-8">{children}</main>
       </body>
     </html>
   );

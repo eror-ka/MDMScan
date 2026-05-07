@@ -39,7 +39,7 @@ export default async function HomePage() {
         {scans.length === 0 ? (
           <p className="text-gray-500 text-sm">Сканирований пока нет.</p>
         ) : (
-          <div className="overflow-hidden rounded-lg border border-gray-800">
+          <div className="overflow-x-auto rounded-lg border border-gray-800">
             <table className="w-full text-sm">
               <thead className="bg-gray-900 text-gray-400 text-xs uppercase tracking-wide">
                 <tr>
