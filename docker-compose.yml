@@ -124,10 +124,27 @@ services:
     restart: unless-stopped
     environment:
       API_URL: http://api:8000
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     depends_on:
       - api
+    networks:
+      - mdmscan-net
+
+  caddy:
+    image: caddy:alpine
+    container_name: mdmscan-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
     networks:
       - mdmscan-net
 
@@ -233,6 +250,8 @@ volumes:
   redis_data:
   scan_tmp:
   prometheus_metrics:
+  caddy_data:
+  caddy_config:
 
 networks:
   mdmscan-net:
