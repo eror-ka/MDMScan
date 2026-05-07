@@ -40,7 +40,7 @@ export default async function HomePage() {
           <p className="text-gray-500 text-sm">Сканирований пока нет.</p>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-gray-800">
-            <table className="w-full text-sm">
+            <table className="min-w-max md:w-full text-sm">
               <thead className="bg-gray-900 text-gray-400 text-xs uppercase tracking-wide">
                 <tr>
                   <th className="px-4 py-3 text-left">Образ</th>

@@ -35,7 +35,7 @@ function VulnTableContent({
   open: boolean;
 }) {
   return (
-    <table className="w-full text-sm">
+    <table className="min-w-max md:w-full text-sm">
       <thead className="bg-gray-950 text-gray-400 text-sm uppercase tracking-wide border-t border-gray-800">
         <tr>
           <th className="px-4 py-2 text-left">Библиотека</th>
@@ -103,7 +103,7 @@ function GenericTableContent({
   const hasLocation = findings.some((f) => f.location);
   const colSpan = 3 + (hasLocation ? 1 : 0);
   return (
-    <table className="w-full text-sm">
+    <table className="min-w-max md:w-full text-sm">
       <thead className="bg-gray-950 text-gray-400 text-sm uppercase tracking-wide border-t border-gray-800">
         <tr>
           <th className="px-4 py-2 text-left">Серьёзность</th>

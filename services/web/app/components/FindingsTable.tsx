@@ -33,7 +33,7 @@ function AnalyticsSummary({
         <span className="font-bold text-gray-100 text-lg">Краткая аналитика</span>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="min-w-max md:w-full text-sm">
           <thead className="bg-gray-950 text-gray-300 text-sm uppercase tracking-wide border-t border-gray-800">
             <tr>
               <th className="px-4 py-2 text-left">Цель</th>
