@@ -63,7 +63,7 @@ export default async function ScanPage({
             {Object.entries(scan.scanner_statuses).map(([name, st]) => (
               <span
                 key={name}
-                className={`px-2 py-1 rounded text-xs font-mono ${
+                className={`px-2 py-1 rounded text-xs font-mono whitespace-nowrap ${
                   st === "ok"
                     ? "bg-green-900/40 text-green-400"
                     : "bg-red-900/40 text-red-400"
